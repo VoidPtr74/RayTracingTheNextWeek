@@ -1,5 +1,4 @@
 use crate::vec3::*;
-use crate::hitable::Hitable;
 use crate::ray::*;
 use crate::aabb::Aabb;
 use crate::rng::Random;
@@ -8,24 +7,19 @@ use crate::perlin::Perlin;
 use std::cmp::Ordering;
 use std::f32;
 
-pub struct NullHitable {
-
-}
-
-impl Hitable for NullHitable {
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        Option::None
-    }
-
-    fn bounding_box(&self, time0 : f32, time1 : f32) -> Aabb {
-        Aabb::empty()
-    }
-}
-
 pub struct SphereData {
     pub center: Vec3,
     pub radius: f32,
     pub material: MaterialId
+}
+
+pub struct MovingSphereData {
+    pub center_start : Vec3,
+    pub center_end : Vec3,
+    pub radius : f32,
+    pub material: MaterialId,
+    pub time_start : f32,
+    pub time_end : f32
 }
 
 #[derive(Copy, Clone)]
@@ -38,6 +32,7 @@ pub enum Instance {
     BvhNode(Aabb, InstanceId, InstanceId),
     FlipNormals(InstanceId),
     Sphere(SphereData),
+    MovingSphere(MovingSphereData)
 }
 
 pub enum MaterialInstance {
@@ -125,12 +120,6 @@ pub struct InstanceHitRecord {
     pub v : f32
 }
 
-#[derive(Copy, Clone)]
-struct BvhNode {
-    instance_id : usize,
-    bounding_box : Aabb
-}
-
 pub struct World {
     bvh_root : InstanceId,
     materials : Vec<MaterialInstance>,
@@ -180,6 +169,50 @@ impl WorldBuilder {
         let bvh = Self::build_bvh(&mut self.object_instances, time_start, time_end);
         World {bvh_root: bvh, object_instances: self.object_instances, materials: self.materials, textures: self.textures}
     }
+}
+
+fn moving_sphere_center(data : &MovingSphereData, time: f32) -> Vec3 {
+    data.center_start + (&(data.center_end - data.center_start) * ((time - data.time_start) / (data.time_end - data.time_start)))
+}
+
+fn hit_moving_sphere(data : &MovingSphereData, ray: &Ray, t_min : f32, t_max : f32) -> Option<InstanceHitRecord> {
+    let center = moving_sphere_center(data, ray.time);
+    let oc = ray.origin - center;
+    let a = ray.direction.square_length();
+    let b = dot(&oc, &ray.direction);
+    let c = oc.square_length() - data.radius * data.radius;
+    let discriminant = b * b - a * c;
+    if discriminant > 0.0 {
+        let tmp = (-b - discriminant.sqrt()) / a;
+        if tmp < t_max && tmp > t_min {
+            let hit_point = ray.point_at_parameter(tmp);
+            let (u,v) = get_sphere_uv(&center, &hit_point);
+            let record = InstanceHitRecord {
+                t: tmp,
+                p: hit_point,
+                normal: &(hit_point - center) / data.radius,
+                material_id: data.material,
+                u, v
+            };
+            return Option::Some(record);
+        }
+
+        let tmp = (-b + discriminant.sqrt()) / a;
+        if tmp < t_max && tmp > t_min {
+            let hit_point = ray.point_at_parameter(tmp);
+            let (u,v) = get_sphere_uv(&center, &hit_point);
+            let record = InstanceHitRecord {
+                t: tmp,
+                p: hit_point,
+                normal: &(hit_point - center) / data.radius,
+                material_id: data.material,
+                u, v
+            };
+            return Option::Some(record);
+        }
+    }
+
+    Option::None
 }
 
 impl World {
@@ -324,6 +357,9 @@ impl World {
                 } else {
                     return Option::None
                 }
+            },
+            Instance::MovingSphere(data) => {
+                hit_moving_sphere(data, ray, t_min, t_max)
             }
         }
     }
@@ -343,19 +379,25 @@ fn get_sphere_uv(center : &Vec3, p : &Vec3) -> (f32, f32) {
     (u,v)
 }
 
-fn get_bounding_box(id : &InstanceId, instances : &Vec<Instance>, _time_start : f32, _time_end : f32) -> Aabb {
+fn get_bounding_box(id : &InstanceId, instances : &Vec<Instance>, time_start : f32, time_end : f32) -> Aabb {
     let instance = &instances[id.value];
     match instance {
         Instance::Empty => Aabb::empty(),
-        Instance::FlipNormals(sub_id) => get_bounding_box(sub_id, instances, _time_start, _time_end),
+        Instance::FlipNormals(sub_id) => get_bounding_box(sub_id, instances, time_start, time_end),
         Instance::Sphere(data) => 
         {
             let radial_length = Vec3::from(data.radius, data.radius, data.radius);
             Aabb::build(data.center - radial_length, data.center + radial_length)
-        }
+        },
+        Instance::MovingSphere(data) => {
+            let radial_length = Vec3::from(data.radius, data.radius, data.radius);
+            let bb0 = Aabb::build(moving_sphere_center(data, time_start) - radial_length, moving_sphere_center(data, time_start) + radial_length);
+            let bb1 = Aabb::build(moving_sphere_center(data, time_end) - radial_length, moving_sphere_center(data, time_end) + radial_length);
+            Aabb::surrounding_box(&bb0, &bb1)
+        },
         Instance::BvhNode(bb, _, _) => {
             *bb
-        }
+        },
     }
 }
 

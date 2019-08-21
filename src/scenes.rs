@@ -258,6 +258,75 @@ pub fn two_spheres(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
     (list, camera)
 }
 
+
+pub fn random_moving_scene_instance(nx : usize, ny : usize, rnd: &mut Random, time_start: f32, time_end: f32) -> (World, Camera) {
+    let look_from = Vec3::from(13.0, 2.0, 3.0);
+    let look_at = Vec3::from(0.0, 0.0, 0.0);
+    let aperture = 0.1;
+    let dist_to_focus = 10.0;
+    let time_start = 0.0;
+    let time_end = 1.0;
+    let camera = Camera::build(
+        &look_from,
+        &look_at,
+        &Vec3::from(0.0, 1.0, 0.0),
+        10.0,
+        nx as f32 / (ny as f32),
+        aperture,
+        dist_to_focus,
+        time_start,
+        time_end
+    );
+
+    let mut builder = WorldBuilder::create();    
+    let white = builder.create_texture(TextureInstance::ConstantTexture(Vec3::from(0.9, 0.9, 0.9)));
+    let grey = builder.create_texture(TextureInstance::ConstantTexture(Vec3::from(0.2,0.3,0.1)));
+    let checker_texture = builder.create_texture(TextureInstance::CheckerTexture(grey, white));
+
+    let checker_material = builder.create_material(MaterialInstance::Lambertian(checker_texture));
+    builder.create_instance(Instance::Sphere(SphereData {center: Vec3::from(0.0, -1000.0, 0.0), radius: 1000.0, material: checker_material}));
+
+    for a in -11..11i16 {
+        for b in -11..11i16 {
+            let choose_mat = rnd.gen();
+            let center = Vec3::from(
+                f32::from(a) + 0.9 * rnd.gen(),
+                0.2,
+                f32::from(b) + 0.9 * rnd.gen(),
+            );
+            if (center - Vec3::from(4.0, 0.2, 0.0)).length() > 0.9 {
+                match choose_mat {
+                    x if x < 0.8 => {
+                        let texture = builder.create_texture(TextureInstance::ConstantTexture(Vec3::from(rnd.gen() * rnd.gen(), rnd.gen() * rnd.gen(), rnd.gen() * rnd.gen())));
+                        let material = builder.create_material(MaterialInstance::Lambertian(texture));
+                        builder.create_instance(Instance::MovingSphere(MovingSphereData{ center_start: center, center_end: center + Vec3::from(0.0, 0.5*rnd.gen(), 0.0), radius: 0.2, material, time_start, time_end }));
+                    },
+                    x if x < 0.95 => {
+                        let material = builder.create_material(MaterialInstance::Metal(Vec3::from(0.5*(1.0 + rnd.gen()), 0.5*(1.0 + rnd.gen()), 0.5*(1.0 + rnd.gen())), 0.0));
+                        builder.create_instance(Instance::Sphere(SphereData{ center, radius: 0.2, material}));
+                    }
+                    _ => {
+                        let material = builder.create_material(MaterialInstance::Dielectric(1.5));
+                        builder.create_instance(Instance::Sphere(SphereData{ center, radius: 0.2, material }));
+                    },
+                };
+            }
+        }
+    }
+
+    let material = builder.create_material(MaterialInstance::Dielectric(1.5));
+    builder.create_instance(Instance::Sphere(SphereData{ center: Vec3::from(0.0, 1.0, 0.0), radius: 1.0, material: material }));
+
+    let texture = builder.create_texture(TextureInstance::ConstantTexture(Vec3::from(0.4, 0.2, 0.1)));
+    let material = builder.create_material(MaterialInstance::Lambertian(texture));
+    builder.create_instance(Instance::Sphere(SphereData{ center: Vec3::from(-4.0, 1.0, 0.0), radius: 1.0, material: material }));
+
+    let material = builder.create_material(MaterialInstance::Metal(Vec3::from(0.7, 0.6, 0.5), 0.0));
+    builder.create_instance(Instance::Sphere(SphereData{ center: Vec3::from(4.0, 1.0, 0.0), radius: 1.0, material: material }));
+
+    (builder.build(time_start, time_end), camera)
+}
+
 pub fn random_moving_scene(nx : usize, ny : usize, rnd: &mut Random, time_start: f32, time_end: f32) -> (Vec<Box<Hitable>>, Camera) {
     let look_from = Vec3::from(13.0, 2.0, 3.0);
     let look_at = Vec3::from(0.0, 0.0, 0.0);
