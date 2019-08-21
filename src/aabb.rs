@@ -29,6 +29,15 @@ impl Aabb {
         Self { min, max }
     }
 
+    pub fn empty() -> Self {
+        // should this be infinite instead?...
+        Self::build(Vec3::from(0.0,0.0,0.0), Vec3::from(0.0,0.0,0.0))
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.min == self.max;
+    }
+
     pub fn surrounding_box(left: &Aabb, right: &Aabb) -> Self {
         Self {
             min: left.min.min(&right.min),

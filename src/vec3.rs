@@ -98,10 +98,7 @@ impl Vec3 {
 
     pub fn invert_elems(&self) -> Self {
         unsafe {
-            let numerators = _mm_set1_ps(1.0);
-            Self {
-                sse: _mm_div_ps(numerators, self.sse),
-            }
+            Self { sse: _mm_rcp_ps(self.sse) }
         }
     }
 
@@ -250,6 +247,19 @@ impl ops::Div<f32> for &Vec3 {
 impl ops::DivAssign<f32> for Vec3 {
     fn div_assign(&mut self, other: f32) {
         unsafe { self.div_self(other) }
+    }
+}
+
+impl PartialEq for Vec3 {
+    fn eq(&self, other: &Self) -> bool {
+        unsafe {
+            for index in 0..4 {
+                if self.array[index] != other.array[index] {
+                    return false;
+                }
+            }
+            true
+        }
     }
 }
 

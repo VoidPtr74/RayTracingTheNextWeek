@@ -13,7 +13,7 @@ pub trait Material: Send + Sync {
         scattered: &mut Ray,
     ) -> bool;
 
-    fn emitted(&self, u : f32, v : f32, p : &Vec3) -> Vec3 {
+    fn emitted(&self, _u : f32, _v : f32, _p : &Vec3) -> Vec3 {
         Vec3::from(0.0,0.0,0.0)
     }
 }

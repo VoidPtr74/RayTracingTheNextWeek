@@ -4,6 +4,7 @@ use crate::material::*;
 use crate::hitable::*;
 use crate::camera::*;
 use crate::vec3::*;
+use crate::world::*;
 
 pub fn final_render(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<Hitable>>, Camera) {
     let nb = 20;
@@ -211,6 +212,28 @@ pub fn two_perlin_spheres(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box
     let camera = Camera::build(&look_from, &look_at, &Vec3::from(0.0, 1.0, 0.0), 
         20.0, (nx as f32) / (ny as f32), aperture, focus_distance, 0.0, 1.0);
     (list, camera)
+}
+
+pub fn two_spheres_instance(nx : usize, ny : usize) -> (World, Camera) {
+    
+    let look_from = Vec3::from(13.0, 2.0, 3.0);
+    let look_at = Vec3::from(0.0, 0.0, 0.0);
+    let focus_distance = 10.0;
+    let aperture = 0.0;
+    let camera = Camera::build(&look_from, &look_at, &Vec3::from(0.0, 1.0, 0.0), 
+        20.0, (nx as f32) / (ny as f32), aperture, focus_distance, 0.0, 1.0);
+
+    let mut world_builder = WorldBuilder::create();
+
+    let odd = world_builder.create_texture(TextureInstance::ConstantTexture(Vec3::from(0.2,0.3,0.1)));
+    let even = world_builder.create_texture(TextureInstance::ConstantTexture(Vec3::from(0.9, 0.9, 0.9)));
+    let checker = world_builder.create_texture(TextureInstance::CheckerTexture(odd, even));
+
+    let checker_material = world_builder.create_material(MaterialInstance::Lambertian(checker));
+    world_builder.create_instance(Instance::Sphere(SphereData { center: Vec3::from(0.0, -10.0, 0.0), radius: 10.0, material: checker_material }));
+    world_builder.create_instance(Instance::Sphere(SphereData { center: Vec3::from(0.0,  10.0, 0.0), radius: 10.0, material: checker_material }));
+
+    (world_builder.build(0.0, 1.0), camera)
 }
 
 pub fn two_spheres(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {

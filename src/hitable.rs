@@ -45,13 +45,13 @@ pub struct MovingSphere {
 impl BvhTree {
     pub fn build(hitables: &mut Vec<Box<Hitable>>, rnd: &mut Random, time_start : f32, time_end : f32) -> Self {
         BvhTree {
-            root: BvhNode::build_bvh_tree(hitables, rnd, time_start, time_end),
+            root: BvhNode::build_bvh_tree(hitables, rnd, time_start, time_end, 0),
         }
     }
 }
 
 impl BvhNode {
-    fn build_bvh_tree(hitables: &mut Vec<Box<Hitable>>, rnd: &mut Random, time_start : f32, time_end : f32) -> Box<Hitable> {
+    fn build_bvh_tree(hitables: &mut Vec<Box<Hitable>>, rnd: &mut Random, time_start : f32, time_end : f32, axis : usize) -> Box<Hitable> {
         match hitables.len() {
             1 => return hitables.remove(0),
             2 => {
@@ -62,7 +62,6 @@ impl BvhNode {
             _ => {}
         };
 
-        let axis = (rnd.gen() * 3.0) as usize;
         hitables.sort_by(|left, right| {
             let bb_left = *left.bounding_box(time_start, time_end).min.get(axis);
             let bb_right = *right.bounding_box(time_start, time_end).min.get(axis);
@@ -73,9 +72,9 @@ impl BvhNode {
             }
         });
         let mut split = hitables.split_off(hitables.len() / 2);
-
-        let left = Self::build_bvh_tree(hitables, rnd, time_start, time_end);
-        let right = Self::build_bvh_tree(&mut split, rnd, time_start, time_end);
+        let next_axis = (axis + 1) % 3;
+        let left = Self::build_bvh_tree(hitables, rnd, time_start, time_end, next_axis);
+        let right = Self::build_bvh_tree(&mut split, rnd, time_start, time_end, next_axis);
         Box::new(Self::create(left, right, time_start, time_end))
     }
 
@@ -116,7 +115,6 @@ impl Hitable for BvhNode {
     }
 }
 
-// not convinced this works if the sphere isn't centered at 0
 fn get_sphere_uv(center : &Vec3, p : &Vec3) -> (f32, f32) {
     let p = (p - center).make_normalised();
     let phi = p.z().atan2(*p.x());
