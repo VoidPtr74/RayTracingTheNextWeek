@@ -363,7 +363,10 @@ impl WorldBuilder {
     fn build_bvh(instance_nodes: &mut Vec<Instance>, time_start : f32, time_end : f32) -> InstanceId {
         let mut node_ids : Vec<InstanceId> = Vec::with_capacity(instance_nodes.len());
         for index in 0..instance_nodes.len() {
-            node_ids.push(InstanceId {value:index});
+            match &instance_nodes[index] {
+                Instance::Empty => {},
+                _ => {node_ids.push(InstanceId {value:index});}
+            }
         }
 
         Self::build_node(instance_nodes, &mut node_ids, 0, time_start, time_end)
