@@ -14,7 +14,7 @@ This implementation uses intrinsics for SSE instructions. To compile, run the fo
 
 ## Running
 
-For best performance, I recommend building for and running on a cpu that supports FMA AVX instructions. The picture at the top was rendered in 39.97 hours on an Intel i7-4790k CPU. The image was rendered at 3840x2160 with 65536 samples per pixel, running 24 worker threads with a maximum of 20 bounces per ray.
+For best performance, I recommend building for and running on a cpu that supports FMA AVX instructions. The picture at the top was rendered in 39.97 hours on an Intel i7-4790k CPU. The image was rendered at 3840x2160 with 65536 samples per pixel, running 16 worker threads with a maximum of 20 bounces per ray.
 
 ## Notes
 
