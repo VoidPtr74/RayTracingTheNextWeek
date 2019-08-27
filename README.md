@@ -1,12 +1,10 @@
-# Ray Tracing in One Weekend 
+# Ray Tracing The Next Week
 
-<img align="center" src="https://github.com/VoidPtr74/RayTracingInOneWeekend/blob/master/title_image.jpg">
+<img align="center" src="https://github.com/VoidPtr74/RayTracingTheNextWeek/blob/master/title_image.jpg">
 
 ## Overview
 
-Yet another implementation of a simple ray-tracer based on Peter Shirley's "[Ray Tracing in One Weekend](https://github.com/petershirley/raytracinginoneweekend)" written in Rust.
-
-This implementation goes a little further from the first weekend by also using the BVH tree from [the next week](https://github.com/RayTracing/TheNextWeek) to improve rendering speed.
+Yet another implementation of a ray-tracer based on Peter Shirley's "[Ray Tracing The Next Week](https://github.com/RayTracing/TheNextWeek)" written in Rust.
 
 ## Building
 
@@ -16,7 +14,7 @@ This implementation uses intrinsics for SSE instructions. To compile, run the fo
 
 ## Running
 
-For best performance, I recommend building for and running on a cpu that supports FMA AVX instructions. The picture at the top was rendered in about 16 minutes on a laptop running an Intel i9-8950HK CPU @ 2.90GHz (boosting as inconsistently as one might expect). The image was rendered at 3840x2160 with 1024 samples per pixel, running 24 worker threads with a maximum of 20 bounces per ray.
+For best performance, I recommend building for and running on a cpu that supports FMA AVX instructions. The picture at the top was rendered in 39.97 hours on an Intel i7-4790k CPU. The image was rendered at 3840x2160 with 65536 samples per pixel, running 24 worker threads with a maximum of 20 bounces per ray.
 
 ## Notes
 
