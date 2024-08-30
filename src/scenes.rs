@@ -24,7 +24,7 @@ pub fn final_render(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<Hitab
         }
     }
     list.push(BvhTree::build(&mut boxlist, rnd, 0.0, 0.0).root);
-    let light = Box::new(DiffuseLight { emit: ConstantTexture::new_with_colour(Vec3::from(7.0, 7.0, 7.0))});
+    let light = Box::new(DiffuseLight { emit: ConstantTexture::new_with_colour(Vec3::from(20.0, 20.0, 20.0))});
     list.push(Box::new(XzRect { x0: 123.0, x1: 423.0, z0: 147.0, z1: 412.0, y: 554.0, material: light}));
     let center = Vec3::from(400.0, 400.0, 200.0);
     let moving_material = Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(0.7, 0.3, 0.1))));
@@ -192,9 +192,9 @@ pub fn earth_scene(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
     let look_at = Vec3::from(0.0, 0.0, 0.0);
     let focus_distance = 10.0;
     let aperture = 0.0;
-        let camera = Camera::build(&look_from, &look_at, &Vec3::from(0.0, 1.0, 0.0), 
-        20.0, (nx as f32) / (ny as f32), aperture, focus_distance, 0.0, 1.0);
-        (list, camera)
+    let camera = Camera::build(&look_from, &look_at, &Vec3::from(0.0, 1.0, 0.0),
+    20.0, (nx as f32) / (ny as f32), aperture, focus_distance, 0.0, 1.0);
+    (list, camera)
 }
 
 pub fn two_perlin_spheres(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<Hitable>>, Camera) {

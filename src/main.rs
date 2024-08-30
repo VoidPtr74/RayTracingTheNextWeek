@@ -41,7 +41,7 @@ fn main() {
     let (mut hitable_list, camera) = final_render(nx, ny, &mut rnd);
     let bvh_tree = BvhTree::build(&mut hitable_list, &mut rnd, time_start, time_end);
 
-    let samples_per_pixel = 1024;
+    let samples_per_pixel = 16384;
     let thread_count = 24;
 
     // let cols = render_single_thread(&camera, nx, ny, samples_per_pixel, &bvh_tree, &mut rnd);
