@@ -13,13 +13,13 @@ pub trait Material: Send + Sync {
         scattered: &mut Ray,
     ) -> bool;
 
-    fn emitted(&self, u : f32, v : f32, p : &Vec3) -> Vec3 {
+    fn emitted(&self, _u : f32, _v : f32, _p : &Vec3) -> Vec3 {
         Vec3::from(0.0,0.0,0.0)
     }
 }
 
 pub struct Lambertian {
-    albedo : Box<Texture>
+    albedo : Box<dyn Texture>
 }
 
 pub struct Metal {
@@ -32,7 +32,7 @@ pub struct Dielectric {
 }
 
 impl Lambertian {
-    pub fn with_texture(texture: Box<Texture>) -> Lambertian {
+    pub fn with_texture(texture: Box<dyn Texture>) -> Lambertian {
         Lambertian { albedo : texture }
     }
 }
@@ -141,17 +141,17 @@ impl Material for Dielectric {
 }
 
 pub struct DiffuseLight {
-    pub emit : Box<Texture>
+    pub emit : Box<dyn Texture>
 }
 
 impl Material for DiffuseLight {
     fn scatter(
         &self,
-        ray: &Ray,
-        rec: &HitRecord,
-        rnd: &mut Random,
-        attenuation: &mut Vec3,
-        scattered: &mut Ray,
+        _ray: &Ray,
+        _rec: &HitRecord,
+        _rnd: &mut Random,
+        _attenuation: &mut Vec3,
+        _scattered: &mut Ray,
     ) -> bool {
         false
     }
@@ -162,7 +162,7 @@ impl Material for DiffuseLight {
 }
 
 pub struct Isotropic {
-    pub albedo : Box<Texture>
+    pub albedo : Box<dyn Texture>
 }
 
 impl Material for Isotropic {

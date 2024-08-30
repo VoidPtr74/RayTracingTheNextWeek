@@ -18,8 +18,8 @@ use ray::Ray;
 use rng::Random;
 use std::f32;
 use vec3::Vec3;
-use texture::*;
-use perlin::*;
+
+
 use scenes::*;
 
 

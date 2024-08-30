@@ -21,18 +21,18 @@ impl ConstantTexture {
 }
 
 impl Texture for ConstantTexture {
-    fn colour(&self, u : f32, v : f32, p : &Vec3) -> Vec3 {
+    fn colour(&self, _u : f32, _v : f32, _p : &Vec3) -> Vec3 {
         self.colour
     }
 }
 
 pub struct CheckerTexture {
-    odd : Box<Texture>,
-    even : Box<Texture>
+    odd : Box<dyn Texture>,
+    even : Box<dyn Texture>
 }
 
 impl CheckerTexture {
-    pub fn new_with_textures(odd : Box<Texture>, even : Box<Texture>) -> Box<CheckerTexture> {
+    pub fn new_with_textures(odd : Box<dyn Texture>, even : Box<dyn Texture>) -> Box<CheckerTexture> {
         Box::new(CheckerTexture { odd, even })
     }
 }
@@ -56,7 +56,7 @@ impl NoiseTexture {
 }
 
 impl Texture for NoiseTexture {
-    fn colour(&self, u : f32, v : f32, p : &Vec3) -> Vec3 {
+    fn colour(&self, _u : f32, _v : f32, p : &Vec3) -> Vec3 {
         &Vec3::from(1.0, 1.0, 1.0) * (0.5*(1.0 + (self.scale*p.z() + 10.0*self.noise.turb(&(p*self.scale), 7)).sin()))
     }
 }
@@ -73,14 +73,14 @@ impl ImageTexture {
         match img {
             LoadResult::Error(msg) => {
                 let err = format!("Could not load texture {}, {}", &path, msg);
-                panic!(err); 
+                panic!("{}", err); 
             },
             LoadResult::ImageU8(img) => {
                 ImageTexture {width: img.width, height : img.height, data : img.data}
             },
             LoadResult::ImageF32(_) => {
                 let err = format!("Could not load texture {}, {}", &path, "unsupported format");
-                panic!(err); 
+                panic!("{}", err); 
             }
         }
     }

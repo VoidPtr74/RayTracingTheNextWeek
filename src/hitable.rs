@@ -18,32 +18,32 @@ pub trait Hitable: Send + Sync {
 }
 
 pub struct BvhTree {
-    pub root: Box<Hitable>,
+    pub root: Box<dyn Hitable>,
 }
 
 pub struct BvhNode {
     pub bounding_box: Aabb,
-    pub left: Box<Hitable>,
-    pub right: Box<Hitable>,
+    pub left: Box<dyn Hitable>,
+    pub right: Box<dyn Hitable>,
 }
 
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
-    pub material: Box<Material>,
+    pub material: Box<dyn Material>,
 }
 
 pub struct MovingSphere {
     pub center_start : Vec3,
     pub center_end : Vec3,
     pub radius : f32,
-    pub material: Box<Material>,
+    pub material: Box<dyn Material>,
     pub time_start : f32,
     pub time_end : f32
 }
 
 impl BvhTree {
-    pub fn build(hitables: &mut Vec<Box<Hitable>>, rnd: &mut Random, time_start : f32, time_end : f32) -> Self {
+    pub fn build(hitables: &mut Vec<Box<dyn Hitable>>, rnd: &mut Random, time_start : f32, time_end : f32) -> Self {
         BvhTree {
             root: BvhNode::build_bvh_tree(hitables, rnd, time_start, time_end),
         }
@@ -51,7 +51,7 @@ impl BvhTree {
 }
 
 impl BvhNode {
-    fn build_bvh_tree(hitables: &mut Vec<Box<Hitable>>, rnd: &mut Random, time_start : f32, time_end : f32) -> Box<Hitable> {
+    fn build_bvh_tree(hitables: &mut Vec<Box<dyn Hitable>>, rnd: &mut Random, time_start : f32, time_end : f32) -> Box<dyn Hitable> {
         match hitables.len() {
             1 => return hitables.remove(0),
             2 => {
@@ -79,7 +79,7 @@ impl BvhNode {
         Box::new(Self::create(left, right, time_start, time_end))
     }
 
-    fn create(left: Box<Hitable>, right: Box<Hitable>, time_start : f32, time_end : f32) -> BvhNode {
+    fn create(left: Box<dyn Hitable>, right: Box<dyn Hitable>, time_start : f32, time_end : f32) -> BvhNode {
         let bounding_box = Aabb::surrounding_box(&left.bounding_box(time_start, time_end), &right.bounding_box(time_start, time_end));
         BvhNode {
             bounding_box,
@@ -232,7 +232,7 @@ pub struct XyRect {
     pub y0 : f32,
     pub y1 : f32,
     pub z  : f32,
-    pub material : Box<Material>
+    pub material : Box<dyn Material>
 }
 
 impl Hitable for XyRect {
@@ -271,7 +271,7 @@ pub struct XzRect {
     pub z0 : f32,
     pub z1 : f32,
     pub y  : f32,
-    pub material : Box<Material>
+    pub material : Box<dyn Material>
 }
 
 impl Hitable for XzRect {
@@ -310,7 +310,7 @@ pub struct YzRect {
     pub z0 : f32,
     pub z1 : f32,
     pub x  : f32,
-    pub material : Box<Material>
+    pub material : Box<dyn Material>
 }
 
 impl Hitable for YzRect {
@@ -344,11 +344,11 @@ impl Hitable for YzRect {
 }
 
 pub struct FlipNormals {
-    pub obj : Box<Hitable>
+    pub obj : Box<dyn Hitable>
 }
 
 impl FlipNormals {
-    pub fn new_with_obj(obj : Box<Hitable>) -> Box<FlipNormals> {
+    pub fn new_with_obj(obj : Box<dyn Hitable>) -> Box<FlipNormals> {
         Box::new(FlipNormals {obj})
     }
 }
@@ -370,15 +370,15 @@ impl Hitable for FlipNormals {
 }
 
 pub struct BoxShape {
-    material : Box<Material>,
-    faces : Vec<Box<Hitable>>,
+    material : Box<dyn Material>,
+    faces : Vec<Box<dyn Hitable>>,
     pmin : Vec3,
     pmax : Vec3
 }
 
 impl BoxShape {
-    pub fn new_from(p0 : &Vec3, p1 : &Vec3, material : Box<Material>) -> Box<BoxShape>{
-        let mut list : Vec<Box<Hitable>> = Vec::with_capacity(6);
+    pub fn new_from(p0 : &Vec3, p1 : &Vec3, material : Box<dyn Material>) -> Box<BoxShape>{
+        let mut list : Vec<Box<dyn Hitable>> = Vec::with_capacity(6);
 
         // rust gods forgive me..
         let mat = Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(0.0, 0.0, 0.0))));
@@ -422,7 +422,7 @@ impl Hitable for BoxShape {
 }
 
 pub struct Translate {
-    pub obj : Box<Hitable>,
+    pub obj : Box<dyn Hitable>,
     pub offset : Vec3
 }
 
@@ -454,14 +454,14 @@ impl Hitable for Translate {
 }
 
 pub struct RotateY {
-    obj : Box<Hitable>,
+    obj : Box<dyn Hitable>,
     sin_theta : f32,
     cos_theta : f32,
     bb : Aabb
 }
 
 impl RotateY {
-    pub fn create_new(obj : Box<Hitable>, angle : f32) -> Box<RotateY> {
+    pub fn create_new(obj : Box<dyn Hitable>, angle : f32) -> Box<RotateY> {
         let radians = angle * (f32::consts::PI / 180.);
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();
@@ -533,12 +533,12 @@ impl Hitable for RotateY {
 
 pub struct ConstantMedium {
     density : f32,
-    boundary : Box<Hitable>,
-    phase_function : Box<Material>,
+    boundary : Box<dyn Hitable>,
+    phase_function : Box<dyn Material>,
 }
 
 impl ConstantMedium {
-    pub fn build_new(density : f32, boundary : Box<Hitable>, texture : Box<Texture>) -> Box<ConstantMedium> {
+    pub fn build_new(density : f32, boundary : Box<dyn Hitable>, texture : Box<dyn Texture>) -> Box<ConstantMedium> {
         let mat = Box::new(Isotropic { albedo : texture });
         Box::new(ConstantMedium {
             density,

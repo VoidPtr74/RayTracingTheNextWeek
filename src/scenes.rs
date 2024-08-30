@@ -5,11 +5,11 @@ use crate::hitable::*;
 use crate::camera::*;
 use crate::vec3::*;
 
-pub fn final_render(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<Hitable>>, Camera) {
+pub fn final_render(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<dyn Hitable>>, Camera) {
     let nb = 20;
-    let mut list : Vec<Box<Hitable>> = Vec::with_capacity(30);
-    let mut boxlist : Vec<Box<Hitable>> = Vec::with_capacity(10000);
-    let mut boxlist2 : Vec<Box<Hitable>> = Vec::with_capacity(10000);
+    let mut list : Vec<Box<dyn Hitable>> = Vec::with_capacity(30);
+    let mut boxlist : Vec<Box<dyn Hitable>> = Vec::with_capacity(10000);
+    let mut boxlist2 : Vec<Box<dyn Hitable>> = Vec::with_capacity(10000);
     for i in 0..nb {
         for j in 0..nb {
             let w = 100.0;
@@ -46,7 +46,7 @@ pub fn final_render(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<Hitab
     let pertext = NoiseTexture::build(rnd, 0.1);
     list.push(build_sphere(Vec3::from(220.0, 280.0, 300.0),  80.0, Box::new(Lambertian::with_texture(pertext))));
 
-    for j in 0..1000 {
+    for _j in 0..1000 {
         let white = Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(0.73, 0.73, 0.73))));
         boxlist2.push(build_sphere(Vec3::from(165.0*rnd.gen(), 165.0 * rnd.gen(), 165.0*rnd.gen()), 10.0, white));
     }
@@ -67,8 +67,8 @@ pub fn final_render(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<Hitab
     (list, camera)
 }
 
-pub fn cornell_smoke(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
-    let mut list : Vec<Box<Hitable>> = Vec::with_capacity(8);
+pub fn cornell_smoke(nx : usize, ny : usize) -> (Vec<Box<dyn Hitable>>, Camera) {
+    let mut list : Vec<Box<dyn Hitable>> = Vec::with_capacity(8);
     
     let red = Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(0.65, 0.05, 0.05))));
     let white = Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(0.73, 0.73, 0.73))));
@@ -115,8 +115,8 @@ pub fn cornell_smoke(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
     (list, camera)
 }
 
-pub fn cornell_box(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
-    let mut list : Vec<Box<Hitable>> = Vec::with_capacity(7);
+pub fn cornell_box(nx : usize, ny : usize) -> (Vec<Box<dyn Hitable>>, Camera) {
+    let mut list : Vec<Box<dyn Hitable>> = Vec::with_capacity(7);
 
     let red = Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(0.65, 0.05, 0.05))));
     let white = Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(0.73, 0.73, 0.73))));
@@ -162,8 +162,8 @@ pub fn cornell_box(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
     (list, camera)
 }
 
-pub fn simple_light(nx : usize, ny : usize, rnd: &mut Random) -> (Vec<Box<Hitable>>, Camera) {
-    let mut list : Vec<Box<Hitable>> = Vec::with_capacity(4);
+pub fn simple_light(nx : usize, ny : usize, rnd: &mut Random) -> (Vec<Box<dyn Hitable>>, Camera) {
+    let mut list : Vec<Box<dyn Hitable>> = Vec::with_capacity(4);
 
     let perlin = NoiseTexture::build(rnd, 4.0);
     list.push(build_sphere(Vec3::from(0.0, -1000.0, 0.0), 1000.0, Box::new(Lambertian::with_texture(perlin))));
@@ -182,9 +182,9 @@ pub fn simple_light(nx : usize, ny : usize, rnd: &mut Random) -> (Vec<Box<Hitabl
     (list, camera)
 }
 
-pub fn earth_scene(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
+pub fn earth_scene(nx : usize, ny : usize) -> (Vec<Box<dyn Hitable>>, Camera) {
     let image_texture = ImageTexture::load(String::from("land_ocean_ice_cloud_2048.png"));
-    let mut list : Vec<Box<Hitable>> = Vec::with_capacity(1);
+    let mut list : Vec<Box<dyn Hitable>> = Vec::with_capacity(1);
     let earth = build_sphere(Vec3::from(0.0, 0.0, 0.0), 2.0, Box::new(Lambertian::with_texture(Box::new(image_texture))));
     list.push(earth);
 
@@ -197,9 +197,9 @@ pub fn earth_scene(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
     (list, camera)
 }
 
-pub fn two_perlin_spheres(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<Hitable>>, Camera) {
+pub fn two_perlin_spheres(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box<dyn Hitable>>, Camera) {
     let noise_texture = NoiseTexture::build(rnd, 4.0);
-    let mut list : Vec<Box<Hitable>> = Vec::with_capacity(2);
+    let mut list : Vec<Box<dyn Hitable>> = Vec::with_capacity(2);
     list.push(build_sphere(Vec3::from(0.0, -1000.0, 0.0), 1000.0, Box::new(Lambertian::with_texture(noise_texture))));
     let noise_texture = NoiseTexture::build(rnd, 4.0);
     list.push(build_sphere(Vec3::from(0.0, 2.0, 0.0), 2.0, Box::new(Lambertian::with_texture(noise_texture))));
@@ -213,7 +213,7 @@ pub fn two_perlin_spheres(nx : usize, ny : usize, rnd : &mut Random) -> (Vec<Box
     (list, camera)
 }
 
-pub fn two_spheres(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
+pub fn two_spheres(nx : usize, ny : usize) -> (Vec<Box<dyn Hitable>>, Camera) {
     let look_from = Vec3::from(13.0, 2.0, 3.0);
     let look_at = Vec3::from(0.0, 0.0, 0.0);
     let focus_distance = 10.0;
@@ -224,7 +224,7 @@ pub fn two_spheres(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
         ConstantTexture::new_with_colour(Vec3::from(0.2,0.3,0.1)), 
         ConstantTexture::new_with_colour(Vec3::from(0.9,0.9,0.9))
         );
-    let mut list: Vec<Box<Hitable>> = Vec::with_capacity(2);
+    let mut list: Vec<Box<dyn Hitable>> = Vec::with_capacity(2);
     list.push(build_sphere(Vec3::from(0.0, -10.0, 0.0), 10.0, Box::new(Lambertian::with_texture(checker_texture))));
     let checker_texture = CheckerTexture::new_with_textures(
         ConstantTexture::new_with_colour(Vec3::from(0.2,0.3,0.1)), 
@@ -235,7 +235,7 @@ pub fn two_spheres(nx : usize, ny : usize) -> (Vec<Box<Hitable>>, Camera) {
     (list, camera)
 }
 
-pub fn random_moving_scene(nx : usize, ny : usize, rnd: &mut Random, time_start: f32, time_end: f32) -> (Vec<Box<Hitable>>, Camera) {
+pub fn random_moving_scene(nx : usize, ny : usize, rnd: &mut Random, _time_start: f32, _time_end: f32) -> (Vec<Box<dyn Hitable>>, Camera) {
     let look_from = Vec3::from(13.0, 2.0, 3.0);
     let look_at = Vec3::from(0.0, 0.0, 0.0);
     let aperture = 0.1;
@@ -255,7 +255,7 @@ pub fn random_moving_scene(nx : usize, ny : usize, rnd: &mut Random, time_start:
     );
 
     let n = 500;
-    let mut list: Vec<Box<Hitable>> = Vec::with_capacity(n + 1);
+    let mut list: Vec<Box<dyn Hitable>> = Vec::with_capacity(n + 1);
     let checker_texture = CheckerTexture::new_with_textures(
         ConstantTexture::new_with_colour(Vec3::from(0.2,0.3,0.1)), 
         ConstantTexture::new_with_colour(Vec3::from(0.9,0.9,0.9))
@@ -274,7 +274,7 @@ pub fn random_moving_scene(nx : usize, ny : usize, rnd: &mut Random, time_start:
                 f32::from(b) + 0.9 * rnd.gen(),
             );
             if (center - Vec3::from(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere : Box<Hitable> = match choose_mat {
+                let sphere : Box<dyn Hitable> = match choose_mat {
                     x if x < 0.8 => build_moving_sphere(center, center + Vec3::from(0.0, 0.5*rnd.gen(), 0.0), 0.2, Box::new(Lambertian::with_texture(ConstantTexture::new_with_colour(Vec3::from(
                         rnd.gen() * rnd.gen(),
                         rnd.gen() * rnd.gen(),
@@ -313,7 +313,7 @@ pub fn random_moving_scene(nx : usize, ny : usize, rnd: &mut Random, time_start:
 
 
 
-fn build_sphere(center: Vec3, radius: f32, material: Box<Material>) -> Box<Hitable> {
+fn build_sphere(center: Vec3, radius: f32, material: Box<dyn Material>) -> Box<dyn Hitable> {
     let sphere = Sphere {
         center,
         radius,
@@ -322,7 +322,7 @@ fn build_sphere(center: Vec3, radius: f32, material: Box<Material>) -> Box<Hitab
     Box::new(sphere)
 }
 
-fn build_moving_sphere(center_start: Vec3, center_end: Vec3, radius: f32, material: Box<Material>, time_start: f32, time_end: f32) -> Box<Hitable> {
+fn build_moving_sphere(center_start: Vec3, center_end: Vec3, radius: f32, material: Box<dyn Material>, time_start: f32, time_end: f32) -> Box<dyn Hitable> {
     let sphere = MovingSphere {
         center_start,
         center_end,
